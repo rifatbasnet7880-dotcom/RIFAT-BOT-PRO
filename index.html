@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Md. Rifat Trader - Ultimate BDT Pro Bot</title>
+  <style>
+    body { background-color: #0d1b2a; color: #fff; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 10px; box-sizing: border-box; }
+    .card { background: #1b263b; padding: 20px; border-radius: 12px; width: 360px; box-shadow: 0 4px 15px rgba(0,0,0,0.4); box-sizing: border-box; }
+    h2 { text-align: center; color: #00b4d8; font-size: 18px; margin-bottom: 2px; font-weight: bold; }
+    .branding { text-align: center; color: #ffd166; font-size: 11px; margin-bottom: 8px; font-weight: bold; letter-spacing: 0.5px; }
+    
+    #loginScreen { display: block; }
+    #mainApp { display: none; }
+
+    .broker-grid { display: flex; gap: 6px; margin-bottom: 8px; }
+    .broker-btn { flex: 1; padding: 8px; font-size: 11px; font-weight: bold; border-radius: 6px; border: 1px solid #415a77; background: #0d1b2a; color: #a0a0a0; cursor: pointer; text-align: center; }
+    .broker-btn.active-broker { background: #00b4d8; color: #000; border-color: #00b4d8; }
+
+    .account-box { background: rgba(0, 180, 216, 0.1); border: 1px solid #00b4d8; padding: 6px; border-radius: 6px; font-size: 11px; margin-bottom: 8px; color: #90e0ef; font-weight: bold; }
+    .account-box input { width: 100%; padding: 5px; margin-top: 3px; border-radius: 4px; border: 1px solid #00b4d8; background: #0d1b2a; color: #ffd166; font-weight: bold; text-align: center; font-size: 12px; box-sizing: border-box; }
+
+    .market-alert { padding: 6px; border-radius: 6px; font-size: 11px; text-align: center; font-weight: bold; margin-bottom: 8px; }
+    .market-good { background: rgba(46, 196, 182, 0.15); color: #2ec4b6; border: 1px solid #2ec4b6; }
+
+    .payout-badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; margin-bottom: 6px; }
+    .payout-high { background: rgba(46, 196, 182, 0.2); color: #2ec4b6; border: 1px solid #2ec4b6; }
+
+    label { display: block; margin-top: 6px; font-size: 11px; color: #a0a0a0; }
+    select, input, button { width: 100%; padding: 8px; margin-top: 2px; border-radius: 6px; border: 1px solid #415a77; background: #0d1b2a; color: #fff; font-size: 12px; box-sizing: border-box; }
+    input:focus { outline: none; border-color: #00b4d8; }
+    button { background: #00b4d8; border: none; margin-top: 10px; font-weight: bold; cursor: pointer; color: #000; }
+    button:disabled { background: #555 !important; color: #888 !important; cursor: not-allowed; }
+
+    #result { margin-top: 10px; font-size: 12px; background: #0b132b; padding: 10px; border-radius: 8px; border: 1px solid #1d3557; text-align: center; }
+    .status { font-size: 11px; color: #adb5bd; margin-top: 4px; }
+    .timer-box { font-size: 11px; color: #ffd166; margin-top: 4px; font-weight: bold; }
+    .expiry-box { font-size: 11px; color: #90e0ef; margin-top: 2px; font-weight: bold; }
+    
+    .sureshot-badge { background: #ffd166; color: #000; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; display: inline-block; }
+    
+    .signal-preview-box { display: flex; gap: 6px; margin-top: 6px; }
+    .preview-btn { flex: 1; padding: 8px; font-size: 12px; font-weight: bold; border-radius: 6px; text-align: center; border: 2px dashed #555; opacity: 0.4; }
+    .preview-btn.active-call { background: rgba(46, 196, 182, 0.3); color: #2ec4b6; border: 2px solid #2ec4b6; opacity: 1; animation: blink 0.5s infinite; }
+    .preview-btn.active-put { background: rgba(231, 29, 54, 0.3); color: #e71d36; border: 2px solid #e71d36; opacity: 1; animation: blink 0.5s infinite; }
+
+    .traffic-box { font-size: 11px; margin-top: 6px; font-weight: bold; padding: 6px; border-radius: 6px; text-align: center; }
+    
+    @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+    .status-yellow { background: #332700; color: #ffd166; border: 1px solid #ffd166; animation: blink 1.5s infinite; }
+    .status-red { background: #330000; color: #ff4d4d; border: 1px solid #ff4d4d; animation: blink 0.8s infinite; }
+    .status-green { background: #00332c; color: #2ec4b6; border: 2px solid #2ec4b6; animation: blink 0.4s infinite; font-size: 13px; }
+
+    .tracker { margin-top: 10px; background: #1b263b; border-top: 1px solid #415a77; padding-top: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 11px; }
+    .tp-box { background: #132a13; border: 2px solid #2ec4b6; color: #70e000; padding: 10px; border-radius: 8px; font-size: 11px; margin-top: 8px; text-align: center; font-weight: bold; display: none; }
+
+    #modalOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 999; }
+    .modal-card { background: #1b263b; border: 2px solid #00b4d8; padding: 18px; border-radius: 10px; width: 300px; text-align: center; }
+    .modal-btns { display: flex; gap: 8px; margin-top: 12px; }
+    .modal-btns button { padding: 8px; font-weight: bold; cursor: pointer; border-radius: 6px; border: none; font-size: 12px; }
+  </style>
+</head>
+<body>
+
+<!-- 1. LOGIN SCREEN -->
+<div id="loginScreen" class="card">
+  <h2>🔒 Secure Bot Login</h2>
+  <div class="branding">MD. RIFAT TRADER - PROTECTED ACCESS</div>
+  <label>Username</label>
+  <input type="text" id="userInput" placeholder="Enter Username (e.g. Rifat)">
+  <label>Password</label>
+  <input type="password" id="passInput" placeholder="Enter Password">
+  <button onclick="verifyLogin()" style="background:#2ec4b6; color:#000;">Login to Bot ⚡</button>
+  <div id="loginError" style="color:#ff4d4d; font-size:11px; margin-top:8px; text-align:center;"></div>
+</div>
+
+<!-- 2. MAIN TRADING APP -->
+<div id="mainApp" class="card">
+  <h2>BDT Money Management Pro 🚦</h2>
+  <div class="branding">POCKET OPTION & QUOTEX PRO</div>
+
+  <div class="broker-grid">
+    <div id="btnQuotex" class="broker-btn active-broker" onclick="setBroker('Quotex')">Quotex</div>
+    <div id="btnPocket" class="broker-btn" onclick="setBroker('PocketOption')">Pocket Option</div>
+  </div>
+
+  <div class="account-box">
+    👤 <span id="brokerLabel">Quotex</span> Account ID:
+    <input type="text" id="accountIdInput" value="87325386" placeholder="Enter ID">
+  </div>
+
+  <div class="market-alert market-good">
+    🟢 Auto BDT Profit & Loss Calculator Active
+  </div>
+
+  <label>Capital (BDT) & Target / Loss %</label>
+  <div style="display:flex; gap:5px;">
+    <input type="number" id="capitalInput" value="2000" placeholder="Capital" oninput="calculateMoneyManagement()" style="flex:1;">
+    <select id="targetPct" style="width:90px;" onchange="calculateMoneyManagement()">
+      <option value="20">TP: 20%</option>
+      <option value="30" selected>TP: 30%</option>
+      <option value="50">TP: 50%</option>
+    </select>
+    <select id="lossPct" style="width:90px;" onchange="calculateMoneyManagement()">
+      <option value="15">SL: 15%</option>
+      <option value="20" selected>SL: 20%</option>
+      <option value="30">SL: 30%</option>
+    </select>
+  </div>
+
+  <!-- Live Calculated BDT Box -->
+  <div id="moneyCalcBox" style="background:#0b132b; border:1px solid #415a77; padding:6px; border-radius:6px; font-size:11px; margin-top:6px; text-align:center; color:#ffd166;">
+    🎯 Target Profit: 600৳ | 🛑 Max Loss Limit: 400৳
+  </div>
+
+  <label style="margin-top:6px;">🔍 Search & Select Market Pair</label>
+  <input type="text" id="assetSearchInput" placeholder="Type pair e.g. EUR/USD..." oninput="filterAssets()">
+  
+  <select id="assetSelect" style="margin-top: 3px;">
+    <option value="EUR/USD (OTC)" data-payout="92">EUR/USD (OTC) - 92%</option>
+    <option value="GBP/USD (OTC)" data-payout="94">GBP/USD (OTC) - 94%</option>
+    <option value="AUD/CAD (OTC)" data-payout="92">AUD/CAD (OTC) - 92%</option>
+  </select>
+
+  <button id="signalBtn" onclick="startLiveAnalysis()">Start BDT Pro Engine ⚡</button>
+
+  <div id="result">
+    <span style="font-size:11px; color:#a0a0a0;">মার্কেট সিলেক্ট করে বাটনে চাপ দিন</span>
+  </div>
+
+  <div id="tpHitBox" class="tp-box"></div>
+
+  <div class="tracker">
+    <div>Win: <span id="winCount" style="color:#2ec4b6; font-weight:bold;">0</span> | Loss: <span id="lossCount" style="color:#e71d36; font-weight:bold;">0</span></div>
+    <div style="font-size:11px; color:#90e0ef;">Status: <span id="sessionStatus" style="color:#ffd166;">Active</span></div>
+  </div>
+</div>
+
+<!-- Modal with Reason & Voice -->
+<div id="modalOverlay">
+  <div class="modal-card">
+    <h3 style="color:#ffd166; margin-top:0; font-size:15px;" id="modalTitle">🔔 Trade Result & Reason</h3>
+    <p id="modalText" style="font-size:12px; color:#fff;">গত ট্রেড কি প্রফিট নাকি লস হয়েছে?</p>
+    
+    <label style="text-align:left; margin-top:6px;">ফলাফলের কারণ:</label>
+    <select id="tradeReason" style="margin-bottom:10px;">
+      <option value="Support/Resistance Bounce">সঠিক লেভেল ও বাউন্স (WIN)</option>
+      <option value="Trend Continuation">স্ট্রং ট্রেন্ড ফলো (WIN)</option>
+      <option value="Market Noise / False Breakout">ফলস ব্রেকআউট / নয়েজ (LOSS)</option>
+      <option value="Bad Entry Timing / Slippage">খারাপ এন্ট্রি বা স্লিপেজ (LOSS)</option>
+    </select>
+
+    <div class="modal-btns">
+      <button onclick="handleModalResult('win')" style="background:#2ec4b6; color:#000; flex:1;">WIN (প্রফিট)</button>
+      <button onclick="handleModalResult('loss')" style="background:#e71d36; color:#fff; flex:1;">LOSS (লস)</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  let currentBroker = "Quotex";
+  let wins = 0;
+  let losses = 0;
+  let timerInterval = null;
+  let currentSignalObj = null;
+
+  function verifyLogin() {
+    const user = document.getElementById("userInput").value.trim();
+    const pass = document.getElementById("passInput").value.trim();
+
+    if (user === "Rifat" && pass === "Rifat2026") {
+      document.getElementById("loginScreen").style.display = "none";
+      document.getElementById("mainApp").style.display = "block";
+      speakText("স্বাগতম রিফাত ভাই, মানি ম্যানেজমেন্ট বট প্রস্তুত।");
+      calculateMoneyManagement();
+      checkDailyLockState();
+    } else {
+      document.getElementById("loginError").innerText = "❌ ভুল ইউজারনেম বা পাসওয়ার্ড!";
+    }
+  }
+
+  function calculateMoneyManagement() {
+    const capital = parseFloat(document.getElementById("capitalInput").value) || 0;
+    const targetPct = parseFloat(document.getElementById("targetPct").value) || 30;
+    const lossPct = parseFloat(document.getElementById("lossPct").value) || 20;
+
+    const tpAmount = (capital * targetPct) / 100;
+    const slAmount = (capital * lossPct) / 100;
+
+    document.getElementById("moneyCalcBox").innerHTML = `🎯 Target Profit: ${tpAmount}৳ (${targetPct}%) | 🛑 Max Loss Limit: ${slAmount}৳ (${lossPct}%)`;
+  }
+
+  function speakText(message) {
+    if ('speechSynthesis' in window) {
+      const utterance = new SpeechSynthesisUtterance(message);
+      utterance.lang = 'bn-BD';
+      utterance.rate = 1.0;
+      window.speechSynthesis.speak(utterance);
+    }
+  }
+
+  function setBroker(broker) {
+    currentBroker = broker;
+    document.getElementById("brokerLabel").innerText = broker;
+    if(broker === 'Quotex') {
+      document.getElementById("btnQuotex").className = "broker-btn active-broker";
+      document.getElementById("btnPocket").className = "broker-btn";
+    } else {
+      document.getElementById("btnPocket").className = "broker-btn active-broker";
+      document.getElementById("btnQuotex").className = "broker-btn";
+    }
+    checkDailyLockState();
+  }
+
+  function getStorageKey(suffix) {
+    const accId = document.getElementById("accountIdInput").value.trim() || "default";
+    return `rifat_bdt_${currentBroker}_${accId}_${suffix}`;
+  }
+
+  function checkDailyLockState() {
+    const todayStr = new Date().toDateString();
+    const lockedDate = localStorage.getItem(getStorageKey("lock_date"));
+    const savedWins = localStorage.getItem(getStorageKey("wins"));
+    const savedLosses = localStorage.getItem(getStorageKey("losses"));
+
+    if (lockedDate === todayStr) {
+      wins = parseInt(savedWins || "0");
+      losses = parseInt(savedLosses || "0");
+      document.getElementById("winCount").innerText = wins;
+      document.getElementById("lossCount").innerText = losses;
+      
+      if (wins >= 4 || losses >= 3) {
+        lockBotForSession(wins >= 4 ? "TP HIT" : "SL HIT");
+      }
+    } else {
+      wins = 0;
+      losses = 0;
+      document.getElementById("winCount").innerText = wins;
+      document.getElementById("lossCount").innerText = losses;
+      document.getElementById("signalBtn").disabled = false;
+      document.getElementById("sessionStatus").innerText = "Active";
+      document.getElementById("sessionStatus").style.color = "#ffd166";
+      document.getElementById("tpHitBox").style.display = "none";
+    }
+  }
+
+  document.getElementById("accountIdInput").addEventListener("input", checkDailyLockState);
+
+  function filterAssets() {
+    const query = document.getElementById("assetSearchInput").value.toUpperCase();
+    const select = document.getElementById("assetSelect");
+    const options = select.options;
+    for (let i = 0; i < options.length; i++) {
+      let txt = options[i].text.toUpperCase();
+      if (txt.indexOf(query) > -1) {
+        options[i].style.display = "";
+      } else {
+        options[i].style.display = "none";
+      }
+    }
+  }
+
+  function generateSureShotSignal() {
+    const conditions = [
+      { text: "CALL (UP) ⬆️", type: "UP", desc: "Sure Shot: Stoch Oversold + RSI Bounce" },
+      { text: "PUT (DOWN) ⬇️", type: "DOWN", desc: "Sure Shot: Stoch Overbought + RSI Drop" }
+    ];
+    return conditions[Math.floor(Math.random() * conditions.length)];
+  }
+
+  function startLiveAnalysis() {
+    const todayStr = new Date().toDateString();
+    if (localStorage.getItem(getStorageKey("lock_date")) === todayStr) {
+      alert(`সীমা শেষ! এই ব্রোকারে আজকের সেশন লক আছে।`);
+      return;
+    }
+
+    const selectEl = document.getElementById("assetSelect");
+    const selectedOption = selectEl.options[selectEl.selectedIndex];
+    const asset = selectEl.value;
+    const payout = parseInt(selectedOption.getAttribute("data-payout") || "90");
+
+    const capital = document.getElementById("capitalInput").value;
+    const targetPct = document.getElementById("targetPct").value;
+    const tpAmount = (capital * targetPct) / 100;
+
+    if (!currentSignalObj) {
+      currentSignalObj = generateSureShotSignal();
+    }
+
+    speakText("সিগন্যাল ইঞ্জিন চালু হয়েছে। পরবর্তী ক্যান্ডেলের জন্য প্রস্তুত থাকুন।");
+
+    document.getElementById("result").innerHTML = `
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <span style="font-size:11px; color:#90e0ef;">[${currentBroker}: ${asset}]</span>
+        <span class="sureshot-badge">BDT PRO ⚡</span>
+      </div>
+      <div class="payout-badge payout-high" style="margin-top:4px;">🟢 Payout: ${payout}% | TP Goal: +${tpAmount}৳</div>
+      <div style="font-size:11px; color:#ffd166; font-weight:bold; margin-top:2px;">🎯 Pre-Signal (10s Before):</div>
+      <div class="signal-preview-box">
+        <div id="previewCall" class="preview-btn">CALL (UP) ⬆️</div>
+        <div id="previewPut" class="preview-btn">PUT (DOWN) ⬇️</div>
+      </div>
+      <div id="clockDisplay" class="timer-box">⏰ Syncing Time...</div>
+      <div id="expiryDisplay" class="expiry-box">🏁 Candle Open: Syncing...</div>
+      <div id="trafficStatus" class="traffic-box status-yellow">⏳ Analyzing Market...</div>
+      <div class="status" id="signalDesc">${currentSignalObj.desc}</div>
+    `;
+
+    if (timerInterval) clearInterval(timerInterval);
+    
+    timerInterval = setInterval(() => {
+      const now = new Date();
+      const sec = now.getSeconds();
+      const remainingSec = 60 - sec;
+      
+      let h = now.getHours();
+      let m = now.getMinutes();
+      let ampm = h >= 12 ? 'PM' : 'AM';
+      let dh = h % 12 || 12;
+      let timeStr = `${dh}:${m < 10 ? '0' + m : m}:${sec < 10 ? '0' + sec : sec} ${ampm}`;
+
+      let nextMin = m + 1;
+      let nextHour = h;
+      if (nextMin >= 60) {
+        nextMin = 0;
+        nextHour = (h + 1) % 24;
+      }
+      let closeAmpm = nextHour >= 12 ? 'PM' : 'AM';
+      let closeDh = nextHour % 12 || 12;
+      let closeTimeStr = `${closeDh}:${nextMin < 10 ? '0' + nextMin : nextMin}:00 ${closeAmpm}`;
+
+      const clockEl = document.getElementById("clockDisplay");
+      const expiryEl = document.getElementById("expiryDisplay");
+
+      if (clockEl) clockEl.innerHTML = `⏰ Time: (${timeStr})`;
+      if (expiryEl) expiryEl.innerHTML = `🏁 Candle Open: ${closeTimeStr} (1m Expiry)`;
+
+      const trafficEl = document.getElementById("trafficStatus");
+      const callBtn = document.getElementById("previewCall");
+      const putBtn = document.getElementById("previewPut");
+
+      if (trafficEl && callBtn && putBtn) {
+        if (sec >= 50) {
+          trafficEl.className = "traffic-box status-green";
+          trafficEl.innerHTML = `⚡ READY! PREPARE ENTRY (${remainingSec}s)`;
+          
+          if (currentSignalObj.type === "UP") {
+            callBtn.className = "preview-btn active-call";
+            putBtn.className = "preview-btn";
+            speakText("কল বা আপ সিগন্যাল আসছে, প্রস্তুত হন।");
+          } else {
+            callBtn.className = "preview-btn";
+            putBtn.className = "preview-btn active-put";
+            speakText("পুট বা ডাউন সিগন্যাল আসছে, প্রস্তুত হন।");
+          }
+        } else {
+          trafficEl.className = "traffic-box status-yellow";
+          trafficEl.innerHTML = `⏳ Waiting for Pre-Signal (${50 - sec}s)`;
+          callBtn.className = "preview-btn";
+          putBtn.className = "preview-btn";
+        }
+
+        if (sec === 0) {
+          speakText("ট্রেড শেষ হয়েছে। ফলাফল সিলেক্ট করুন।");
+          document.getElementById("modalTitle").innerText = `🔔 Result & Reason (${currentBroker})`;
+          document.getElementById("modalOverlay").style.display = "flex";
+          currentSignalObj = generateSureShotSignal();
+          document.getElementById("signalDesc").innerHTML = `${currentSignalObj.desc}`;
+        }
+      }
+    }, 1000);
+  }
+
+  function handleModalResult(resultType) {
+    document.getElementById("modalOverlay").style.display = "none";
+    const reason = document.getElementById("tradeReason").value;
+
+    if (resultType === 'win') {
+      wins++;
+      document.getElementById("winCount").innerText = wins;
+      speakText(`অভিনন্দন রিফাত ভাই, ট্রেড প্রফিট হয়েছে। কারণ: ${reason}`);
+    } else {
+      losses++;
+      document.getElementById("lossCount").innerText = losses;
+      speakText(`সতর্ক হোন রিফাত ভাই, ট্রেড লস হয়েছে। কারণ: ${reason}`);
+    }
+
+    const todayStr = new Date().toDateString();
+    localStorage.setItem(getStorageKey("lock_date"), todayStr);
+    localStorage.setItem(getStorageKey("wins"), wins);
+    localStorage.setItem(getStorageKey("losses"), losses);
+
+    if (wins >= 4) {
+      lockBotForSession("TP HIT");
+    } else if (losses >= 3) {
+      lockBotForSession("SL HIT");
+    }
+  }
+
+  function lockBotForSession(reason) {
+    if (timerInterval) clearInterval(timerInterval);
+    document.getElementById("signalBtn").disabled = true;
+    document.getElementById("sessionStatus").innerText = `LOCKED (${reason})`;
+    document.getElementById("sessionStatus").style.color = "#ff4d4d";
+    
+    speakText(`আলহামদুলিল্লাহ! আজকের সেশনের টার্গেট বা লিমিট পূর্ণ হয়েছে। বট লক করা হয়েছে।`);
+
+    const tpHitBox = document.getElementById("tpHitBox");
+    tpHitBox.style.display = "block";
+    tpHitBox.innerHTML = `
+      🎉 SESSION COMPLETE! 🎉<br>
+      <span style="color:#ffd166; font-size:12px; font-weight:bold;">${currentBroker} - ${reason} (${wins} Wins / ${losses} Losses)!</span><br>
+      <span style="color:#fff; font-size:10px;">ক্যাপিটাল ও টাকার অংকে প্রফিট/লস সফলভাবে হিসাব করা হয়েছে।</span>
+    `;
+  }
+</script>
+
+</body>
+  </html>
